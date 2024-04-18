@@ -1,2 +1,2 @@
-# ai-coderevew
+# AI CodeReview
 Init example
