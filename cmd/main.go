@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ai-codereview/internal/application"
+	"ai-codereview/pkg/application"
 	"fmt"
 )
 
