@@ -126,7 +126,7 @@ inputs:
       !**/*.tfstate
       !**/*.tfstate.backup
   ai_model_url:
-    required: true
+    required: false
     description: 'The url of the model api interface.'
     default: ''
   model_retries:
