@@ -29,8 +29,11 @@ act push -l
 # Get Act to run a specific job
 act -j review 
 
-# Actions Graph
+# The graph option draws the available workflow jobs structure in your terminal as a graph.
 act --graph
+ ╭─────────────╮ ╭──────────────────────────────────╮
+ │ AI Reviewer │ │ Analyze (${{ matrix.language }}) │
+ ╰─────────────╯ ╰──────────────────────────────────╯
 
 # pass secrets into a job so that the GitHub action can consume them
 act -s MY_TOKEN_SECRET=<token> -s MY_NETLIFY_SITE_ID=<site_id> 
