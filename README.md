@@ -15,19 +15,13 @@
 AI CodeReview 'ai-review' is an AI-based code reviewer and summarizer for GitHub pull requests. You can use your own AI model, its designed to be used as a GitHub Action and can be configured to run on every pull request and review comments
 
 </div>
+
+
+
 ## Reviewer Features:
 
 
 
-
-## Testing Pipeline
-```bash
-# Basic use
-act 
-
-# Use on OSX
-act pull_request --container-architecture linux/amd64
-```
 
 #### Environment variables
 
