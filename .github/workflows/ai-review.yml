@@ -28,6 +28,9 @@ jobs:
   review:
     name: AI Reviewer 
     runs-on: [self-hosted, 'ubuntu-latest']
+    strategy:
+      matrix:
+        go-version: [ '1.21.x' ]
     steps:
       - uses: actions/checkout@v3
         with:
