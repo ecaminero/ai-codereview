@@ -1,0 +1,183 @@
+name: 'AI-based Pull Requests Reviewer & Summarizer'
+description: 'Setup a Go environment and add it to the PATH'
+author: 'ecaminero'
+
+# https://actions-cool.github.io/github-action-branding/
+branding:
+  icon: 'git-merge'
+  color: 'purple'
+
+inputs:
+  debug:
+    required: false
+    description: 'Enable debug mode'
+    default: 'false'
+  path_filters:
+    required: false
+    description: |
+      The path filters, e.g., "src/**.py", "!dist/**", each line will be considered as one pattern.
+      See also
+
+      - https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onpushpull_requestpull_request_targetpathspaths-ignore
+      - https://github.com/isaacs/minimatc
+    default: |
+      !dist/**
+      !**/*.app
+      !**/*.bin
+      !**/*.bz2
+      !**/*.class
+      !**/*.db
+      !**/*.csv
+      !**/*.tsv
+      !**/*.dat
+      !**/*.dll
+      !**/*.dylib
+      !**/*.egg
+      !**/*.glif
+      !**/*.gz
+      !**/*.xz
+      !**/*.zip
+      !**/*.7z
+      !**/*.rar
+      !**/*.zst
+      !**/*.ico
+      !**/*.jar
+      !**/*.tar
+      !**/*.war
+      !**/*.lo
+      !**/*.log
+      !**/*.mp3
+      !**/*.wav
+      !**/*.wma
+      !**/*.mp4
+      !**/*.avi
+      !**/*.mkv
+      !**/*.wmv
+      !**/*.m4a
+      !**/*.m4v
+      !**/*.3gp
+      !**/*.3g2
+      !**/*.rm
+      !**/*.mov
+      !**/*.flv
+      !**/*.iso
+      !**/*.swf
+      !**/*.flac
+      !**/*.nar
+      !**/*.o
+      !**/*.ogg
+      !**/*.otf
+      !**/*.p
+      !**/*.pdf
+      !**/*.doc
+      !**/*.docx
+      !**/*.xls
+      !**/*.xlsx
+      !**/*.ppt
+      !**/*.pptx
+      !**/*.pkl
+      !**/*.pickle
+      !**/*.pyc
+      !**/*.pyd
+      !**/*.pyo
+      !**/*.pub
+      !**/*.pem
+      !**/*.rkt
+      !**/*.so
+      !**/*.ss
+      !**/*.eot
+      !**/*.exe
+      !**/*.pb.go
+      !**/*.lock
+      !**/*.ttf
+      !**/*.yaml
+      !**/*.yml
+      !**/*.cfg
+      !**/*.toml
+      !**/*.ini
+      !**/*.mod
+      !**/*.sum
+      !**/*.work
+      !**/*.json
+      !**/*.mmd
+      !**/*.svg
+      !**/*.jpeg
+      !**/*.jpg
+      !**/*.png
+      !**/*.gif
+      !**/*.bmp
+      !**/*.tiff
+      !**/*.webm
+      !**/*.woff
+      !**/*.woff2
+      !**/*.dot
+      !**/*.md5sum
+      !**/*.wasm
+      !**/*.snap
+      !**/*.parquet
+      !**/gen/**
+      !**/_gen/**
+      !**/generated/**
+      !**/@generated/**
+      !**/vendor/**
+      !**/*.min.js
+      !**/*.min.js.map
+      !**/*.min.js.css
+      !**/*.tfstate
+      !**/*.tfstate.backup
+  ai_model_url:
+    required: true
+    description: 'The url of the model api interface.'
+    default: ''
+  model_retries:
+    required: false
+    description:
+      'How many times to retry AI Model in case of timeouts or errors?'
+    default: '5'
+  model_timeout_ms:
+    required: false
+    description: 'Timeout for AI Model API call in millis'
+    default: '360000'
+  language:
+    required: false
+    description: ISO code for the response language
+    default: en-US
+  model_instructions:
+    required: false
+    description: 'The instruct model was trained to output human-like answers to questions.'
+    default: |
+      You are `@codereview` (aka `github-actions[bot]`), a language model 
+      trained by Meta. Your purpose is to act as a highly experienced 
+      software engineer and provide a thorough review of the code hunks
+      and suggest code snippets to improve key areas such as:
+        - Logic
+        - Security
+        - Performance
+        - Data races
+        - Consistency
+        - Error handling
+        - Maintainability
+        - Modularity
+        - Complexity
+        - Optimization
+        - Best practices: DRY, SOLID, KISS
+
+      Do not comment on minor code style issues, missing 
+      comments/documentation. Identify and resolve significant 
+      concerns to improve overall code quality while deliberately 
+      disregarding minor issues.
+  bot_icon:
+      required: false
+      description: 'The icon for the bot'
+      default: '<img src="https://cdn.githubraw.com/ecaminero/ai-codereview/main/docs/images/AI-bot-codereview.png" alt="Image" width="20" height="20">'
+runs:
+  using: 'docker'  # We'll use a Docker container
+  image: 'golang:{{ version }}'  # Docker image with Go installed
+steps:
+  - uses: actions/checkout@v3  # Checkout your code from Git
+  - name: Build Go binary
+    run: |  # Multi-line command
+      go mod tidy
+      go build -o dist/action cmd/main.go
+  - name: Run the action
+    run: dist/action  # Execute the built binar

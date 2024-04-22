@@ -5,7 +5,7 @@
 # or to provide custom queries or build logic.
 #
 
-name: AI Code Reviewer
+name: "AI Reviewer"
 
 on:
   pull_request_target:
@@ -15,7 +15,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
 
 concurrency:
   group:
@@ -25,9 +25,24 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'pull_request_review_comment' }}
 
 jobs:
-  show:
-    runs-on: ubuntu-latest
+  review:
+    name: AI Reviewer 
+    runs-on: [self-hosted, 'ubuntu-latest']
     steps:
-      - name: Show Env
-        run: echo "hello"
- 
+      - uses: actions/checkout@v4
+        strategy:
+          matrix:
+            go-version: [ '1.19', '1.20', '1.21.x' ]
+        with:
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+          ref: ${{github.event.pull_request.head.ref}}
+          submodules: false
+      
+      - uses: ./
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          debug: true
+          path_filters: |
+            !dist/**
+            !**/*.lock
