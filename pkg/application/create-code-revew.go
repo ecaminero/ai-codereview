@@ -2,14 +2,18 @@ package application
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
+	"time"
 
 	"github.com/google/go-github/v61/github"
 	"golang.org/x/oauth2"
 )
+
+type Event struct {
+	Issue *github.Issue `json:"issue"`
+}
 
 func CodeReview() (string, error) {
 	ctx := context.Background()
@@ -18,20 +22,26 @@ func CodeReview() (string, error) {
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
+	now := time.Now()
+	dateTime := now.Format("2006-01-02 15:04:05")
+
 	// owner and repo correspond to the Github repository you want to interact with
 	owner := "ecaminero"
 	repo := os.Getenv("GITHUB_REPOSITORY")
-	ref := os.Getenv("GITHUB_REF")
-	splitRef := strings.Split(ref, "/")
-	number, err := strconv.Atoi(splitRef[2])
-
+	eventPath := os.Getenv("GITHUB_EVENT_PATH")
+	data, err := os.ReadFile(eventPath)
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
 		return "", err
 	}
-	body := `This is a multi-line string.
-	It can contain multiple lines.
-	Each new line is represented by a new line in the string.`
+	var event Event
+	err = json.Unmarshal(data, &event)
+	if err != nil {
+		return "", err
+	}
+
+	number := event.Issue.GetNumber()
+
+	body := `This is an example comment` + dateTime
 	comment := &github.IssueComment{Body: github.String(body)}
 	comment, _, err = client.Issues.CreateComment(ctx, owner, repo, number, comment)
 

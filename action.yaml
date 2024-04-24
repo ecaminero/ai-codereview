@@ -170,10 +170,6 @@ inputs:
       required: false
       description: 'The icon for the bot'
       default: '<img src="https://cdn.githubraw.com/ecaminero/ai-codereview/main/docs/images/AI-bot-codereview.png" alt="Image" width="20" height="20">'
-  go-version:
-    description: 'Go version'
-    required: true
-    default: '1.21'
 runs:
   using: "composite"
   steps:
