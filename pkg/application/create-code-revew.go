@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
@@ -21,14 +22,25 @@ func CodeReview() (string, error) {
 	)
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
-	now := time.Now()
-	var event Event
-	dateTime := now.Format("2006-01-02 15:04:05")
+	dateTime := time.Now().Format("2006-01-02 15:04:05")
 
 	// owner and repo correspond to the Github repository you want to interact with
 	owner := "ecaminero"
 	repo := os.Getenv("GITHUB_REPOSITORY")
+	// Get the event from the GITHUB_EVENT_PATH
+	eventPath := os.Getenv("GITHUB_EVENT_PATH")
+	data, err := os.ReadFile(eventPath)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return "", err
+	}
 
+	var event Event
+	err = json.Unmarshal(data, &event)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return "", err
+	}
 	number := event.Issue.GetNumber()
 	body := `This is an example comment` + dateTime
 	comment := &github.IssueComment{Body: github.String(body)}
