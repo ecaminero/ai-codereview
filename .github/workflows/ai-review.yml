@@ -7,11 +7,16 @@
 
 name: "AI Reviewer"
 
+permissions:
+  contents: read
+  pull-requests: write
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
   pull_request_review_comment:
     types: [created]
+  pull_request:
+    branches: [ "main" ]
 
 concurrency:
   group:
@@ -24,24 +29,12 @@ jobs:
   review:
     name: AI Reviewer 
     runs-on: [self-hosted, 'ubuntu-latest']
-    permissions:
-      contents: read
-      pull-requests: write
-    strategy:
-      matrix:
-        go-version: [1.20.x, 1.21.x]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           repository: ${{github.event.pull_request.head.repo.full_name}}
           ref: ${{github.event.pull_request.head.ref}}
           submodules: false
-      - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go-version }}
-      - name: Check Go version
-        run: go version
       - uses: ./
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

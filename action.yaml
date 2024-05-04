@@ -171,13 +171,8 @@ inputs:
       description: 'The icon for the bot'
       default: '<img src="https://cdn.githubraw.com/ecaminero/ai-codereview/main/docs/images/AI-bot-codereview.png" alt="Image" width="20" height="20">'
 runs:
-  using: 'docker'  # We'll use a Docker container
-  image: 'golang:{{ version }}'  # Docker image with Go installed
-steps:
-  - uses: actions/checkout@v3  # Checkout your code from Git
-  - name: Build Go binary
-    run: |  # Multi-line command
-      go mod tidy
-      go build -o dist/action cmd/main.go
-  - name: Run the action
-    run: dist/action  # Execute the built binar
+  using: "composite"
+  steps:
+    - name: Run o Action
+      run: ./dist/main_linux
+      shell: bash

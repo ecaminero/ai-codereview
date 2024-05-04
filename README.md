@@ -18,7 +18,15 @@ AI CodeReview 'ai-review' is an AI-based code reviewer and summarizer for GitHub
 
 
 
-## Reviewer Features:
+### Install:
+```bash
+go mod tidy
+
+# Build Image
+GOOS=linux go build -o dist/action  cmd/main.go
+```
+
+
 
 
 
