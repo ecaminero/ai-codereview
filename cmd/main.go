@@ -9,6 +9,6 @@ import (
 func main() {
 	model_retries := os.Getenv("model_retries")
 	comment, _ := application.CodeReview()
-	fmt.Printf("------------Comment: %s", comment)
-	fmt.Printf("------------Comment: %s", model_retries)
+	fmt.Println("------------Comment:", comment)
+	fmt.Println("------------Comment:", model_retries)
 }
