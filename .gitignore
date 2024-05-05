@@ -703,3 +703,7 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/go,goland+all,linux,osx,windows,vim,nanoc,visualstudiocode,visualstudio,test
+
+# Secrets
+*.secrets
+*.input
