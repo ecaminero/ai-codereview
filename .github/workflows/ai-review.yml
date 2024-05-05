@@ -11,12 +11,10 @@ permissions:
   contents: read
   pull-requests: write
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
-  pull_request_review_comment:
-    types: [created]
   pull_request:
-    branches: [ "main" ]
+    types:
+      - opened
+      - synchronize
 
 concurrency:
   group:
@@ -30,12 +28,10 @@ jobs:
     name: AI Reviewer 
     runs-on: [self-hosted, 'ubuntu-latest']
     steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: ${{github.event.pull_request.head.repo.full_name}}
-          ref: ${{github.event.pull_request.head.ref}}
-          submodules: false
-      - uses: ./
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Ai Revewer
+        uses: ./
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
