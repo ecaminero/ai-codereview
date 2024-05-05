@@ -31,6 +31,6 @@ func main() {
 	fmt.Printf("Ref: %s\n", ref)
 	fmt.Printf("Github Base ref: %s\n", base_ref)
 
-	comment, _ := application.CodeReview(repo_owner, repository, 9)
+	comment, _ := application.CodeReview(repo_owner, repository, 10)
 	fmt.Println("------------Comment:", comment)
 }

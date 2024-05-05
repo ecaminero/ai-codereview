@@ -25,13 +25,12 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
-        with:
-          ref: '60150621' 
       - name: Ai Revewer
         uses: ./
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          ref: '60150621' 
           debug: true
           path_filters: |
             !**/*.lock
