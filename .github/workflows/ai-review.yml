@@ -32,8 +32,6 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
-        with:
-          ref: '60150621' 
       - name: Ai Revewer
         uses: ./
         env:
