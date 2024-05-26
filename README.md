@@ -16,31 +16,22 @@ AI CodeReview 'ai-review' is an AI-based code reviewer and summarizer for GitHub
 
 </div>
 
-
-
 ### Install:
 ```bash
 go mod tidy
 
 # Build Image
-GOOS=linux go build -o dist/action  cmd/main.go
+GOOS=linux GOARCH=amd64 go build -o dist/main_linux cmd/main.go
 ```
-
-
-
-
-
 
 #### Environment variables
 
 - `GITHUB_TOKEN`: This should already be available to the GitHub Action
   environment. This is used to add comments to the pull request.
 
-
 ### Models:
 * [codellama](https://ollama.com/library/codellama) - A large language model that can use text prompts to generate and discuss code.
     Code Llama is a model for generating and discussing code, built on top of Llama 2. It’s designed to make workflows faster and efficient for developers and make it easier for people to learn how to code. It can generate both code and natural language about code. Code Llama supports many of the most popular programming languages used today, including Python, C++, Java, PHP, Typescript (Javascript), C#, Bash and more.
-
 
 ## Contributors
 **¡Thanks to all the collaborators who have made this project possible!**
