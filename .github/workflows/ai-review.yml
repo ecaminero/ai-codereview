@@ -35,7 +35,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          ref: '60150621' 
           debug: true
           path_filters: |
             !**/*.lock

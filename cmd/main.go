@@ -14,6 +14,14 @@ func getPRNumber(ref string) (int, error) {
 	return strconv.Atoi(prNumberStr)
 }
 
+func all_variables() {
+	for _, e := range os.Environ() {
+		pair := strings.SplitN(e, "=", 2)
+		if strings.HasPrefix(pair[0], "GITHUB_") {
+			fmt.Println(pair[0], ":", pair[1])
+		}
+	}
+}
 func main() {
 	fmt.Println("---- Start ----")
 	repository := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
@@ -26,13 +34,8 @@ func main() {
 	head_ref := os.Getenv("GITHUB_HEAD_REF")
 	base_ref := os.Getenv("GITHUB_BASE_REF")
 	ref := os.Getenv("GITHUB_REF")
-
-	// Convert the pull request number to an integer
-	prNumber, err := getPRNumber(ref)
-	if err != nil {
-		fmt.Println("Error converting pull request number to integer:", err)
-		return
-	}
+	ref_name := os.Getenv("GITHUB_REF_NAME")
+	all_variables()
 	// debug data
 	fmt.Printf("Repository: %s\n", repository)
 	fmt.Printf("Event Name: %s\n", eventName)
@@ -43,7 +46,17 @@ func main() {
 	fmt.Printf("Repo owner: %s\n", repo_owner)
 	fmt.Printf("Head Ref: %s\n", head_ref)
 	fmt.Printf("Ref: %s\n", ref)
+	fmt.Printf("RefName: %s\n", ref_name)
+
 	fmt.Printf("Github Base ref: %s\n", base_ref)
+
+	// Convert the pull request number to an integer
+	prNumber, err := getPRNumber(ref)
+	if err != nil {
+		fmt.Println("Error converting pull request number to integer:", err)
+		return
+	}
+
 	fmt.Printf("Pull Request Number: %d\n", prNumber)
 
 	comment, _ := application.CodeReview(repo_owner, repository, prNumber)
