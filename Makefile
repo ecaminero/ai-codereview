@@ -9,7 +9,7 @@ logging:
 	@echo "GOOSE_BIN: $(GOOSE_BIN)"
 	
 build:
-	GOOS=linux go build -o dist/main_linux  cmd/main.go
+	GOOS=linux GOARCH=amd64 go build -o dist/main_linux cmd/main.go
 
 act: build
 	@act pull_request -j 'review' \
