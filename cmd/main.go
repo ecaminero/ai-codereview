@@ -14,6 +14,14 @@ func getPRNumber(ref string) (int, error) {
 	return strconv.Atoi(prNumberStr)
 }
 
+func all_variables() {
+	for _, e := range os.Environ() {
+		pair := strings.SplitN(e, "=", 2)
+		if strings.HasPrefix(pair[0], "GITHUB_") {
+			fmt.Println(pair[0], ":", pair[1])
+		}
+	}
+}
 func main() {
 	fmt.Println("---- Start ----")
 	repository := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
@@ -27,7 +35,7 @@ func main() {
 	base_ref := os.Getenv("GITHUB_BASE_REF")
 	ref := os.Getenv("GITHUB_REF")
 	ref_name := os.Getenv("GITHUB_REF_NAME")
-
+	all_variables()
 	// debug data
 	fmt.Printf("Repository: %s\n", repository)
 	fmt.Printf("Event Name: %s\n", eventName)
