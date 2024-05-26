@@ -15,7 +15,7 @@ func getPRNumber(ref string) (int, error) {
 }
 
 func main() {
-	fmt.Println("-- Start --")
+	fmt.Println("---- Start ----")
 	repository := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
 	repo_owner := os.Getenv("GITHUB_REPOSITORY_OWNER")
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
@@ -33,7 +33,6 @@ func main() {
 		fmt.Println("Error converting pull request number to integer:", err)
 		return
 	}
-
 	// debug data
 	fmt.Printf("Repository: %s\n", repository)
 	fmt.Printf("Event Name: %s\n", eventName)
@@ -49,5 +48,5 @@ func main() {
 
 	comment, _ := application.CodeReview(repo_owner, repository, prNumber)
 	fmt.Println("------------Comment:", comment)
-	fmt.Println("-- END --")
+	fmt.Println("---- END ----")
 }
