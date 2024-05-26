@@ -1,4 +1,4 @@
-name: 'AI-based Pull Requests Reviewer & Summarizer'
+name: 'AI-based Pull Requests Reviewer & Summarizer with Chat Capabilities'
 description: 'Setup a Go environment and add it to the PATH'
 author: 'ecaminero'
 

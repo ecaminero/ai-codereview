@@ -4,8 +4,15 @@ import (
 	"ai-codereview/pkg/application"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
+
+func getPRNumber(ref string) (int, error) {
+	parts := strings.Split(ref, "/")
+	prNumberStr := parts[len(parts)-2]
+	return strconv.Atoi(prNumberStr)
+}
 
 func main() {
 	fmt.Println("-- Start --:")
@@ -19,6 +26,14 @@ func main() {
 	head_ref := os.Getenv("GITHUB_HEAD_REF")
 	base_ref := os.Getenv("GITHUB_BASE_REF")
 	ref := os.Getenv("GITHUB_REF")
+
+	// Convert the pull request number to an integer
+	prNumber, err := getPRNumber(ref)
+	if err != nil {
+		fmt.Println("Error converting pull request number to integer:", err)
+		return
+	}
+
 	// debug data
 	fmt.Printf("Repository: %s\n", repository)
 	fmt.Printf("Event Name: %s\n", eventName)
@@ -30,7 +45,8 @@ func main() {
 	fmt.Printf("Head Ref: %s\n", head_ref)
 	fmt.Printf("Ref: %s\n", ref)
 	fmt.Printf("Github Base ref: %s\n", base_ref)
+	fmt.Printf("Pull Request Number: %d\n", prNumber)
 
-	comment, _ := application.CodeReview(repo_owner, repository, 9)
+	comment, _ := application.CodeReview(repo_owner, repository, prNumber)
 	fmt.Println("------------Comment:", comment)
 }

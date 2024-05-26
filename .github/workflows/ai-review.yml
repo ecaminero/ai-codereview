@@ -10,13 +10,20 @@ name: "AI Reviewer"
 permissions:
   contents: read
   pull-requests: write
+
 on:
-  pull_request:
-    types: [opened, synchronize ]
-  pull_request_review_comment:
-    types: [created]
   pull_request_target:
     types: [opened, synchronize, reopened]
+  pull_request_review_comment:
+    types: [created]
+
+
+concurrency:
+  group:
+    ${{ github.repository }}-${{ github.event.number || github.head_ref ||
+    github.sha }}-${{ github.workflow }}-${{ github.event_name ==
+    'pull_request_review_comment' && 'pr_comment' || 'pr' }}
+  cancel-in-progress: ${{ github.event_name != 'pull_request_review_comment' }}
 
 jobs:
   review:
@@ -25,13 +32,13 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
-        with:
-          ref: '60150621' 
       - name: Ai Revewer
         uses: ./
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          ref: '60150621' 
           debug: true
           path_filters: |
             !**/*.lock
+            !dist/**
