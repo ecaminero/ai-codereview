@@ -27,12 +27,6 @@ func main() {
 	base_ref := os.Getenv("GITHUB_BASE_REF")
 	ref := os.Getenv("GITHUB_REF")
 
-	// Convert the pull request number to an integer
-	prNumber, err := getPRNumber(ref)
-	if err != nil {
-		fmt.Println("Error converting pull request number to integer:", err)
-		return
-	}
 	// debug data
 	fmt.Printf("Repository: %s\n", repository)
 	fmt.Printf("Event Name: %s\n", eventName)
@@ -44,6 +38,14 @@ func main() {
 	fmt.Printf("Head Ref: %s\n", head_ref)
 	fmt.Printf("Ref: %s\n", ref)
 	fmt.Printf("Github Base ref: %s\n", base_ref)
+
+	// Convert the pull request number to an integer
+	prNumber, err := getPRNumber(ref)
+	if err != nil {
+		fmt.Println("Error converting pull request number to integer:", err)
+		return
+	}
+
 	fmt.Printf("Pull Request Number: %d\n", prNumber)
 
 	comment, _ := application.CodeReview(repo_owner, repository, prNumber)
