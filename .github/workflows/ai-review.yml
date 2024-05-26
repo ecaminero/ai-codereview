@@ -18,6 +18,13 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened]
 
+concurrency:
+  group:
+    ${{ github.repository }}-${{ github.event.number || github.head_ref ||
+    github.sha }}-${{ github.workflow }}-${{ github.event_name ==
+    'pull_request_review_comment' && 'pr_comment' || 'pr' }}
+  cancel-in-progress: ${{ github.event_name != 'pull_request_review_comment' }}
+
 jobs:
   review:
     name: AI Reviewer 
@@ -34,3 +41,4 @@ jobs:
           debug: true
           path_filters: |
             !**/*.lock
+            !dist/**
