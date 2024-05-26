@@ -31,7 +31,9 @@ jobs:
     runs-on: [self-hosted, 'ubuntu-latest']
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          ref: '60150621' 
       - name: Ai Revewer
         uses: ./
         env:
