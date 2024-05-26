@@ -26,6 +26,7 @@ func main() {
 	head_ref := os.Getenv("GITHUB_HEAD_REF")
 	base_ref := os.Getenv("GITHUB_BASE_REF")
 	ref := os.Getenv("GITHUB_REF")
+	ref_name := os.Getenv("GITHUB_REF_NAME")
 
 	// debug data
 	fmt.Printf("Repository: %s\n", repository)
@@ -37,6 +38,8 @@ func main() {
 	fmt.Printf("Repo owner: %s\n", repo_owner)
 	fmt.Printf("Head Ref: %s\n", head_ref)
 	fmt.Printf("Ref: %s\n", ref)
+	fmt.Printf("RefName: %s\n", ref_name)
+
 	fmt.Printf("Github Base ref: %s\n", base_ref)
 
 	// Convert the pull request number to an integer
