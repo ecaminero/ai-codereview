@@ -18,4 +18,3 @@ act: build
 	--secret-file github.secrets \
 	--pull=false \
 	-W .github/workflows/ai-review.yml
-
