@@ -22,7 +22,7 @@ func main() {
 	repo_owner := os.Getenv("GITHUB_REPOSITORY_OWNER")
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
 
-	prNumber, err := strconv.Atoi(os.Getenv("GITHUB_REF_NAME"))
+	prNumber, err := strconv.Atoi(os.Getenv("GITHUB_PR_NUMBER"))
 	if err != nil {
 		fmt.Println("Error converting PR number to int")
 
