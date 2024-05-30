@@ -14,7 +14,7 @@ func getPRNumber(ref string) (int, error) {
 	return strconv.Atoi(prNumberStr)
 }
 
-func all_variables() {
+func print_all_variables() {
 	for _, e := range os.Environ() {
 		pair := strings.SplitN(e, "=", 2)
 		if strings.HasPrefix(pair[0], "GITHUB_") {
@@ -23,7 +23,8 @@ func all_variables() {
 	}
 }
 func main() {
-	fmt.Println("---- Start ----")
+
+	print_all_variables()
 	repository := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
 	repo_owner := os.Getenv("GITHUB_REPOSITORY_OWNER")
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
@@ -35,10 +36,18 @@ func main() {
 	base_ref := os.Getenv("GITHUB_BASE_REF")
 	ref := os.Getenv("GITHUB_REF")
 	ref_name := os.Getenv("GITHUB_REF_NAME")
-	all_variables()
+
+	switch eventName {
+	case "pull_request_target", "pull_request":
+		fmt.Println("Code review for pull request")
+	case "pull_request_review_comment":
+		fmt.Println("A pull request review comment event occurred")
+	default:
+		fmt.Println("This event is not supported")
+	}
+
 	// debug data
 	fmt.Printf("Repository: %s\n", repository)
-	fmt.Printf("Event Name: %s\n", eventName)
 	fmt.Printf("Workflow: %s\n", workflow)
 	fmt.Printf("Run Number: %s\n", runNumber)
 	fmt.Printf("Actor: %s\n", actor)
