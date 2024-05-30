@@ -3,6 +3,7 @@ package main
 import (
 	"ai-codereview/pkg/application"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -33,10 +34,13 @@ func main() {
 	case "pull_request_review_comment":
 		fmt.Println("A pull request review comment event occurred")
 	default:
-		fmt.Println("This event is not supported")
+		log.Fatal("This event is not supported")
 	}
 
-	comment, _ := application.CodeReview(repo_owner, repository, prNumber)
+	comment, err := application.CodeReview(repo_owner, repository, prNumber)
+	if err != nil {
+		log.Fatal("Error creating comment")
+	}
 	fmt.Println("------------Comment:", comment)
 	fmt.Println("---- END ----")
 }
