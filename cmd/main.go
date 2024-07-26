@@ -1,7 +1,13 @@
 package main
 
 import (
-	"ai-codereview/pkg/application"
+	"ai-codereview/internal/application"
+	"ai-codereview/internal/domain"
+	stub_persistence "ai-codereview/internal/infraestructure/stub"
+
+	"github.com/google/go-github/v61/github"
+
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -17,30 +23,46 @@ func print_all_variables() {
 		}
 	}
 }
+
 func main() {
 	print_all_variables()
+	token := os.Getenv("GITHUB_TOKEN")
 	repository := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
-	repo_owner := os.Getenv("GITHUB_REPOSITORY_OWNER")
+	repoOwner := os.Getenv("GITHUB_REPOSITORY_OWNER")
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
-
+	if token == "" {
+		log.Fatal("Unauthorized: No token present")
+	}
+	ModelRepository := stub_persistence.NewStubModelRepository()
+	ctx := context.Background()
+	GithubClient := github.NewClient(nil).WithAuthToken(token)
+	repo, _, err := GithubClient.Repositories.Get(ctx, repoOwner, repository)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	prNumber, err := strconv.Atoi(os.Getenv("GITHUB_PR_NUMBER"))
 	if err != nil {
-		fmt.Println("Error converting PR number to int")
-
+		fmt.Println(domain.ErrPullRequestFormat.Error())
 	}
+
+	context := application.Context{
+		Repository:        *repo.Name,
+		Owner:             repoOwner,
+		PullRequestNumber: prNumber,
+	}
+
 	switch eventName {
 	case "pull_request_target", "pull_request":
-		fmt.Println("Code review for pull request")
+		application.CreateCodeReview(ModelRepository, context, GithubClient)
 	case "pull_request_review_comment":
-		fmt.Println("A pull request review comment event occurred")
+		application.HandleCommentReview(repoOwner, repository, prNumber)
 	default:
-		log.Fatal("This event is not supported")
+		log.Fatalf("Skipped: current event is %s, only support pull_request event", eventName)
 	}
 
-	comment, err := application.CodeReview(repo_owner, repository, prNumber)
 	if err != nil {
-		log.Fatal("Error creating comment")
+		log.Fatalf("Error handling : %s", err)
 	}
-	fmt.Println("------------Comment:", comment)
 	fmt.Println("---- END ----")
 }
