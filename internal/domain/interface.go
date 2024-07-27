@@ -1,5 +1,5 @@
 package domain
 
-type ModelRepository interface {
+type IAIModel interface {
 	GetComment() string
 }

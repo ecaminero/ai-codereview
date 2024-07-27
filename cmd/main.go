@@ -2,12 +2,9 @@ package main
 
 import (
 	"ai-codereview/internal/application"
-	"ai-codereview/internal/domain"
+	github_connection "ai-codereview/internal/infraestructure/github-connection"
 	stub_persistence "ai-codereview/internal/infraestructure/stub"
 
-	"github.com/google/go-github/v61/github"
-
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -27,42 +24,37 @@ func print_all_variables() {
 func main() {
 	print_all_variables()
 	token := os.Getenv("GITHUB_TOKEN")
-	repository := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
+	githubRepositoryName := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
 	repoOwner := os.Getenv("GITHUB_REPOSITORY_OWNER")
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
-	if token == "" {
-		log.Fatal("Unauthorized: No token present")
-	}
-	ModelRepository := stub_persistence.NewStubModelRepository()
-	ctx := context.Background()
-	GithubClient := github.NewClient(nil).WithAuthToken(token)
-	repo, _, err := GithubClient.Repositories.Get(ctx, repoOwner, repository)
+	pullRequestNumber, err := strconv.Atoi(os.Getenv("GITHUB_PR_NUMBER"))
+
 	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	prNumber, err := strconv.Atoi(os.Getenv("GITHUB_PR_NUMBER"))
-	if err != nil {
-		fmt.Println(domain.ErrPullRequestFormat.Error())
+		log.Fatal(err)
 	}
 
-	context := application.Context{
-		Repository:        *repo.Name,
-		Owner:             repoOwner,
-		PullRequestNumber: prNumber,
+	params := github_connection.GithubConnectionParams{
+		RepositoryName:    githubRepositoryName,
+		Token:             token,
+		RepoOwner:         repoOwner,
+		PullRequestNumber: pullRequestNumber,
 	}
+	githubCodeRepositoryProvider, err := github_connection.NewGithubConnection(params)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	aiModel := stub_persistence.NewStubModelRepository()
+
+	app := application.NewApp(githubCodeRepositoryProvider, aiModel)
 
 	switch eventName {
 	case "pull_request_target", "pull_request":
-		application.CreateCodeReview(ModelRepository, context, GithubClient)
+		app.CreateCodeReview()
 	case "pull_request_review_comment":
-		application.HandleCommentReview(repoOwner, repository, prNumber)
+		// application.HandleCommentReview(repoOwner, githubRepositoryName, prNumber)
+		print("HandleCommentReview")
 	default:
 		log.Fatalf("Skipped: current event is %s, only support pull_request event", eventName)
 	}
-
-	if err != nil {
-		log.Fatalf("Error handling : %s", err)
-	}
-	fmt.Println("---- END ----")
 }
