@@ -10,7 +10,7 @@
 <a href="https://github.com/ecaminero/ai-codereview">
   <img width="300px" src="https://cdn.githubraw.com/ecaminero/ai-codereview/main/docs/images/AI-bot-codereview.png" alt="Logo" width="800" />
 </a>
-
+  
 ## AI CodeReview
 AI CodeReview 'ai-review' is an AI-based code reviewer and summarizer for GitHub pull requests. You can use your own AI model, its designed to be used as a GitHub Action and can be configured to run on every pull request and review comments
 
