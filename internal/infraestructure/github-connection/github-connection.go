@@ -5,6 +5,15 @@ import (
 	"github.com/google/go-github/v61/github"
 )
 
+/*
+Debe a partir de un PR, obtener todos los commits
+
+obtener los archivos cambiados
+
+con esos commits debe
+
+*/
+
 type GithubConnectionParams struct {
 	RepositoryName    string
 	Token             string
@@ -47,9 +56,59 @@ func (receiver GithubConnection) CreateComment(comment string) error {
 	}
 
 	_, _, err := receiver.client.Issues.CreateComment(
-		ctx, receiver.RepoOwner,
+		ctx,
+		receiver.RepoOwner,
 		receiver.RepositoryName,
 		receiver.PullRequestNumber,
 		comment_text)
+
+	/*
+	* esto es otro metodo CreateReview
+	 */
+
+	listOptions := &github.ListOptions{PerPage: 100}
+	commits, _, err := receiver.client.PullRequests.ListCommits(
+		ctx,
+		receiver.RepoOwner,
+		receiver.RepositoryName,
+		receiver.PullRequestNumber,
+		listOptions,
+	)
+	if err != nil {
+		return err
+	}
+
+	/*
+		receiver.client.Repositories.GetCommit(
+			ctx,
+			receiver.RepoOwner,
+			receiver.RepositoryName,
+
+			listOptions,
+		)
+	*/
+
+	changes := make([]string, 0)
+	for _, commit := range commits {
+		for _, file := range commit.Files {
+			changes = append(changes, file.GetBlobURL())
+		}
+	}
+
+	print(changes)
+	/*
+		fin de metodo CreateReview
+	*/
+
 	return err
 }
+
+/*
+
+func (receiver *GithubConnection) CreateReview() ([]string, error) {
+	ctx := context.Background()
+
+	return changes, nil
+}
+
+*/
