@@ -39,7 +39,6 @@ GOOS=linux GOARCH=amd64 go build -o dist/main_linux cmd/main.go
 [![Contributors](https://contrib.rocks/image?repo=ecaminero/ai-codereview)](https://github.com/ecaminero/ai-codereview/graphs/contributors)
 
 <p align="right">(<a href="#readme-top">Go back up</a>)</p>
-
 ## 🛠️ Stack
 - [![Go][go-badge]][go-url] - An open-source programming language supported by Google.
 
