@@ -1,8 +1,12 @@
 package main
 
 import (
-	"ai-codereview/pkg/application"
+	"ai-codereview/internal/application"
+	github_connection "ai-codereview/internal/infraestructure/github-connection"
+	stub_persistence "ai-codereview/internal/infraestructure/stub"
+
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -16,27 +20,41 @@ func print_all_variables() {
 		}
 	}
 }
+
 func main() {
 	print_all_variables()
-	repository := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
-	repo_owner := os.Getenv("GITHUB_REPOSITORY_OWNER")
+	token := os.Getenv("GITHUB_TOKEN")
+	githubRepositoryName := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
+	repoOwner := os.Getenv("GITHUB_REPOSITORY_OWNER")
 	eventName := os.Getenv("GITHUB_EVENT_NAME")
+	pullRequestNumber, err := strconv.Atoi(os.Getenv("GITHUB_PR_NUMBER"))
 
-	prNumber, err := strconv.Atoi(os.Getenv("GITHUB_PR_NUMBER"))
 	if err != nil {
-		fmt.Println("Error converting PR number to int")
-
+		log.Fatal(err)
 	}
+
+	params := github_connection.GithubConnectionParams{
+		RepositoryName:    githubRepositoryName,
+		Token:             token,
+		RepoOwner:         repoOwner,
+		PullRequestNumber: pullRequestNumber,
+	}
+	githubCodeRepositoryProvider, err := github_connection.NewGithubConnection(params)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	aiModel := stub_persistence.NewStubModelRepository()
+
+	app := application.NewApp(githubCodeRepositoryProvider, aiModel)
+
 	switch eventName {
 	case "pull_request_target", "pull_request":
-		fmt.Println("Code review for pull request")
+		app.CreateCodeReview()
 	case "pull_request_review_comment":
-		fmt.Println("A pull request review comment event occurred")
+		// application.HandleCommentReview(repoOwner, githubRepositoryName, prNumber)
+		print("HandleCommentReview")
 	default:
-		fmt.Println("This event is not supported")
+		log.Fatalf("Skipped: current event is %s, only support pull_request event", eventName)
 	}
-
-	comment, _ := application.CodeReview(repo_owner, repository, prNumber)
-	fmt.Println("------------Comment:", comment)
-	fmt.Println("---- END ----")
 }
