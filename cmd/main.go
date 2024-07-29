@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -23,31 +22,14 @@ func print_all_variables() {
 
 func main() {
 	print_all_variables()
-	token := os.Getenv("GITHUB_TOKEN")
-	githubRepositoryName := strings.Join(strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")[1:], "")
-	repoOwner := os.Getenv("GITHUB_REPOSITORY_OWNER")
-	eventName := os.Getenv("GITHUB_EVENT_NAME")
-	pullRequestNumber, err := strconv.Atoi(os.Getenv("GITHUB_PR_NUMBER"))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	params := github_connection.GithubConnectionParams{
-		RepositoryName:    githubRepositoryName,
-		Token:             token,
-		RepoOwner:         repoOwner,
-		PullRequestNumber: pullRequestNumber,
-	}
-	githubCodeRepositoryProvider, err := github_connection.NewGithubConnection(params)
+	githubConnection, err := github_connection.NewGithubConnection()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	aiModel := stub_persistence.NewStubModelRepository()
-
-	app := application.NewApp(githubCodeRepositoryProvider, aiModel)
-
+	app := application.NewApp(githubConnection, aiModel)
+	eventName := githubConnection.GetEventName()
 	switch eventName {
 	case "pull_request_target", "pull_request":
 		app.CreateCodeReview()
