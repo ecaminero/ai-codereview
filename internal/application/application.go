@@ -3,7 +3,7 @@ package application
 import "ai-codereview/internal/domain"
 
 type ICodeRepositoryProvider interface {
-	GetRepositoryName() string
+	GetEventName() string
 	GetRepository() string
 	CreateComment(comment string) error
 }
