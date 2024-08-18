@@ -1,5 +1,3 @@
- 
-
 GOOSE_BIN=goose
 UNAME_S=$(shell uname -s)
 

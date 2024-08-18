@@ -12,9 +12,13 @@ type Context struct {
 }
 
 func (a *App) CreateCodeReview() {
-	comment := a.aiModel.GetComment()
-	err := a.codeRepositoryProvider.CreateComment(comment)
+	changes, err := a.codeRepositoryProvider.GetPullRequestChanges()
 	if err != nil {
 		log.Fatalf("Error: %v\n", err)
 	}
+	err = a.codeRepositoryProvider.CreateComment(changes)
+	if err != nil {
+		log.Fatalf("Error: %v\n", err)
+	}
+
 }

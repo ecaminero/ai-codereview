@@ -21,7 +21,6 @@ func print_all_variables() {
 }
 
 func main() {
-	print_all_variables()
 	githubConnection, err := github_connection.NewGithubConnection()
 	if err != nil {
 		log.Fatal(err)

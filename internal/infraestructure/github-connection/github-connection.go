@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/go-github/v61/github"
 )
@@ -19,9 +20,8 @@ type GithubConnection struct {
 }
 
 type FileChange struct {
-	Filename    string
-	LineNumbers []int
-	Content     string
+	github.CommitFile
+	Position int `json:"position"`
 }
 
 func NewGithubConnection() (*GithubConnection, error) {
@@ -73,25 +73,26 @@ func (receiver *GithubConnection) GetRepository() string {
 	return receiver.RepositoryName
 }
 
-func (receiver *GithubConnection) GetPullRequestChanges() ([]FileChange, error) {
+func (receiver *GithubConnection) GetPullRequestChanges() ([]github.CommitFile, error) {
 	var ctx = context.Background()
 	var opt = &github.ListOptions{PerPage: 100}
-	var allAdditions []FileChange
+	var allChanges []github.CommitFile
 
 	for {
 		files, resp, err := receiver.Client.PullRequests.ListFiles(
-			ctx, receiver.RepoOwner, receiver.RepositoryName, receiver.PullRequestNumber, opt)
+			ctx, receiver.RepoOwner,
+			receiver.RepositoryName,
+			receiver.PullRequestNumber,
+			opt)
+
 		if err != nil {
 			return nil, fmt.Errorf("error listing pull request files: %w", err)
 		}
 		for _, file := range files {
-			if file.Patch == nil {
+			if file.GetAdditions() == 0 {
 				continue
 			}
-			additions := parseAdditions(file)
-			if len(additions.LineNumbers) > 0 {
-				allAdditions = append(allAdditions, additions)
-			}
+			allChanges = append(allChanges, *file)
 		}
 
 		if resp.NextPage == 0 {
@@ -100,70 +101,86 @@ func (receiver *GithubConnection) GetPullRequestChanges() ([]FileChange, error) 
 		opt.Page = resp.NextPage
 	}
 
-	return allAdditions, nil
+	return allChanges, nil
 }
 
-func (receiver *GithubConnection) CreateComment(comment string) error {
-	// ctx := context.Background()
+func (receiver *GithubConnection) CreateComment(files []github.CommitFile) error {
+	ctx := context.Background()
 
-	allFiles, err := receiver.GetPullRequestChanges()
-	if err != nil {
-		return fmt.Errorf("error getting commits changes: %w", err)
-	}
+	for _, file := range files {
+		fmt.Printf("Filename: %s\n", file.GetFilename())
+		fmt.Printf("Patch: %s\n", file.GetPatch())
 
-	for _, file := range allFiles {
-		fmt.Printf("File: %s, RawURL: %s\n", file.Filename, file.Content)
-		// commentData := &github.PullRequestComment{
-		// 	CommitID: github.String(os.Getenv("GITHUB_SHA")),
-		// 	Path:     github.String(*file.BlobURL),
-		// 	Body:     github.String(comment),
-		// }
-		// var prComment, _, err = receiver.Client.PullRequests.CreateComment(
-		// 	ctx,
-		// 	receiver.RepoOwner,
-		// 	receiver.RepositoryName,
-		// 	receiver.PullRequestNumber,
-		// 	commentData)
-		// if err != nil {
-		// 	return fmt.Errorf("error PullRequests: %w", err)
-		// }
+		comments, err := analyzeFileAndCreateComments(&file)
+		if err != nil {
+			return fmt.Errorf("error analyzing file %s: %w", file.GetFilename(), err)
+		}
+
+		for _, commentData := range comments {
+			comment, _, err := receiver.Client.PullRequests.CreateComment(
+				ctx,
+				receiver.RepoOwner,
+				receiver.RepositoryName,
+				receiver.PullRequestNumber,
+				commentData)
+			if err != nil {
+				return fmt.Errorf("error creating PullRequest comment: %w", err)
+			}
+			fmt.Printf("Review comment created: %s\n", comment.GetHTMLURL())
+		}
 	}
 
 	return nil
 }
 
-func parseAdditions(file *github.CommitFile) FileChange {
-	lines := strings.Split(*file.Patch, "\n")
-	var lineNumbers []int
-	var content strings.Builder
+func analyzeFileAndCreateComments(file *github.CommitFile) ([]*github.PullRequestComment, error) {
+	var comments []*github.PullRequestComment
+	patch := file.GetPatch()
+	lines := strings.Split(patch, "\n")
 
-	lineNumber := 0
+	position := 0
+	newLineNumber := 0
+	startLine := 0
+	endLine := 0
+	var newLines []string
 
 	for _, line := range lines {
-		if strings.HasPrefix(line, "@@") {
-			parts := strings.Split(line, " ")
-			if len(parts) >= 3 {
-				lineNumberStr := strings.TrimPrefix(parts[2], "+")
-				lineNumber, _ = strconv.Atoi(strings.Split(lineNumberStr, ",")[0])
+		position++
+		if strings.HasPrefix(line, "+") {
+			newLineNumber++
+			if startLine == 0 {
+				startLine = newLineNumber
 			}
-			continue
-		}
-
-		if strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++") {
-			lineNumbers = append(lineNumbers, lineNumber)
-		}
-
-		if !strings.HasPrefix(line, "-") {
-			lineNumber++
-			content.WriteString(line + "\n")
-
+			endLine = newLineNumber
+			newLines = append(newLines, strings.TrimPrefix(line, "+"))
+		} else {
+			if startLine != 0 {
+				comment := createCommentForLines(file, position-1, startLine, endLine, newLines)
+				comments = append(comments, comment)
+				startLine = 0
+				endLine = 0
+				newLines = nil
+			}
 		}
 	}
-	fmt.Println(lineNumbers)
 
-	return FileChange{
-		Filename:    *file.Filename,
-		LineNumbers: lineNumbers,
-		Content:     content.String(),
+	// Handle case where file ends with new lines
+	if startLine != 0 {
+		comment := createCommentForLines(file, position, startLine, endLine, newLines)
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
+}
+
+func createCommentForLines(file *github.CommitFile, position, startLine, endLine int, lines []string) *github.PullRequestComment {
+	commentBody := fmt.Sprintf("Code Review %s - New lines %d to %d:\n\n", time.Now().Format("2006-01-02 15:04:05"), startLine, endLine)
+	commentBody += strings.Join(lines, "\n")
+
+	return &github.PullRequestComment{
+		Body:     github.String(commentBody),
+		CommitID: github.String(os.Getenv("GITHUB_SHA")),
+		Path:     github.String(file.GetFilename()),
+		Position: github.Int(position),
 	}
 }
