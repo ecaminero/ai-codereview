@@ -1,11 +1,16 @@
 package application
 
-import "ai-codereview/internal/domain"
+import (
+	"ai-codereview/internal/domain"
+
+	"github.com/google/go-github/v61/github"
+)
 
 type ICodeRepositoryProvider interface {
-	GetRepositoryName() string
+	GetEventName() string
 	GetRepository() string
-	CreateComment(comment string) error
+	GetPullRequestChanges() ([]github.CommitFile, error)
+	CreateComment(changedFiles []github.CommitFile) error
 }
 
 type App struct {
